@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function ymarket_install() {
+  module_load_include('module', 'ymarket');
+  module_load_include('inc', 'content', 'includes/content.crud');
+
+  $node_types = node_get_types('names');
+
+  $field_type_name = key_exists('product', $node_types) ? 'product' : 'page';
+  $field_name = 'ymarket';
+
+  variable_set('ymarket_field_type_name', $field_type_name);
+  variable_set('ymarket_field_name', $field_name);
+
+  $field_table = ymarket_field_sql_data('table');
+
+  // Добавление cck поля в базу
+  if (!$field_table) {
+    $field = array(
+      'type_name' => $field_type_name,  // Тип контента, к которому относится поле
+      'label' => 'Яндекс.Маркет',       // Заголовок поля
+      'field_name' => $field_name,      // Машинное имя поля
+      'type' => 'number_integer',       // Тип сохраняемых данных
+      'widget_type' => 'optionwidgets_onoff',       // Виджет, используемый для заполнения поля
+      'allowed_values' => YMARKET_UNPUBLISHED . "|не публикуется\n" . YMARKET_PUBLISHED . "|публикуется",  // Значение и лэйбл для чекбокса
+      'description' => 'Отметьте, если материал должен быть опубликован в Яндекс.Маркете.',
+    );
+
+    content_field_instance_create($field);
+  }
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function ymarket_enable() {
+  module_load_include('module', 'ymarket');
+
+  // Установим значение поля ymarket в состояние UNPUBLISHED
+  ymarket_batch_do('ymarket_set_fields_default', 'Присвоение полям ymarket значения по умолчанию', 'admin/build/modules');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ymarket_uninstall() {
+  // Удаление поля из базы
+  // Поле может быть у нескольких типов контента,
+  // модуль удалит поле из всех.
+
+  $node_types = node_get_types('names');
+  $field_name = variable_get('ymarket_field_name', NULL);
+
+  // Удаление переменных модуля
+  variable_del('ymarket_field_type_name');
+  variable_del('ymarket_field_name');
+
+  if (!is_null($field_name)) {
+    module_load_include('inc', 'content', 'includes/content.crud');
+    foreach ($node_types as $type_name => $human_name) {
+      content_field_instance_delete($field_name, $type_name, FALSE);
+    }
+
+    content_clear_type_cache(TRUE);
+    menu_rebuild();
+  }
+}
