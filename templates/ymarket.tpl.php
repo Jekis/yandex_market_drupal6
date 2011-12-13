@@ -7,8 +7,7 @@
  * @param $vid
  *  ИД словаря, к которому принадлежат категории
 */
-?>
-<?php echo '<?xml version="1.0" encoding="utf-8"?>' . "\n"; ?>
+?><?php echo '<?xml version="1.0" encoding="utf-8"?>' . "\n"; ?>
 <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
 <yml_catalog date="<?php echo $date ?>">
   <shop>
@@ -54,10 +53,10 @@
       <?php if ($node->picture) { ?>
         <picture><?php echo $node->picture; ?></picture>
       <?php } ?>
+        <name><?php echo $node->title; ?></name>
       <?php if ($node->vendor) { ?>
         <vendor><?php echo $node->vendor; ?></vendor>
       <?php } ?>
-        <name><?php echo $node->title; ?></name>
       <?php if ($node->body) { ?>
         <description><?php echo $node->body; ?></description>
       <?php } ?>

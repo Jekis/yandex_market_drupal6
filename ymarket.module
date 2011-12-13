@@ -32,8 +32,18 @@ function ymarket_menu(){
     'access arguments' => array('access content'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/ymarket/yml_validate'] = array(
+    'title' => 'Валидация файла экспорта',
+    'page callback' => 'ymarket_yml_validate',
+    'access arguments' => array('admin yandex market'),
+    'type' => MENU_NORMAL_ITEM,
+  );
   $items['ymarket'] = array(
     'page callback' => 'ymarket_page',
+    'access arguments' => array('access content'),
+  );
+  $items['shops.dtd'] = array(
+    'page callback' => 'yamrket_shops_dtd_page',
     'access arguments' => array('access content'),
   );
 
@@ -447,4 +457,38 @@ function ymarket_set_fields_default(&$context) {
   ", YMARKET_UNPUBLISHED, $limit);
 
   return $limit;
+}
+
+/**
+ * Страница валидации файла экспорта.
+*/
+function ymarket_yml_validate() {
+  $module_path = drupal_get_path('module', 'ymarket');
+  $xml_file_path = url('ymarket', array('absolute' => TRUE));
+  $inline_js = "
+    (function($) {
+      $(function() {
+        executeValidation('$xml_file_path', $('.messages'));
+      });
+    })(jQuery);
+  ";
+
+  drupal_add_js($module_path . '/js/xml_dtd_validate_ie.js');
+  drupal_add_js($inline_js, 'inline');
+
+  return '<div class="messages" style="white-space: pre-line;"></div>';
+}
+
+/**
+ * Страница shops.dtd.
+*/
+function yamrket_shops_dtd_page() {
+  echo yamrket_shops_dtd();
+}
+
+/**
+ * Получает содержимое файла яндекса shops.dtd.
+*/
+function yamrket_shops_dtd() {
+  return file_get_contents('http://partner.market.yandex.ru/pages/help/shops.dtd');
 }
